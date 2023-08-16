@@ -22,19 +22,48 @@ const connectDBAndServer = async () => {
 
 connectDBAndServer();
 
+const format = function (i) {
+  return {
+    playerId: i.player_id,
+    playerName: i.player_name,
+    jerseyNumber: i.jersey_number,
+    role: i.role,
+  };
+};
+
+//API 1
+
 app.get("/players/", async (request, response) => {
   const query = `select * from cricket_team
     `;
   const players = await db.all(query);
-  response.send(players);
+  let lst = [];
+  for (let i of players) {
+    const change = format(i);
+    lst.push(change);
+  }
+  response.send(lst);
 });
 
+//API 2
 app.post("/players/", async (request, response) => {
   const playerDetails = request.body;
-  const { player_name, jersey_number, role } = playerDetails;
+  const { playerName, jerseyNumber, role } = playerDetails;
   const query = `insert into cricket_team (player_name,jersey_number,role)
-  values("${player_name}",${jersey_number},"${role};")
+  values("${playerName}",${jerseyNumber},"${role};")
   `;
   const dbresponse = await db.run(query);
   response.send("Player Added to Team");
 });
+
+//API 3
+
+app.get("/players/:playerId/", async (request, response) => {
+  const { playerId } = request.params;
+  const query = `select * from cricket_team where player_id=${playerId};`;
+  const players = await db.get(query);
+  const change = format(players);
+  response.send(change);
+});
+
+module.exports = app;
